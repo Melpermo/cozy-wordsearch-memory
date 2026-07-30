@@ -1,47 +1,52 @@
 import React from 'react';
-import { Star, ArrowRight, Home, Clock, Target, XCircle, Flame } from 'lucide-react';
+import { HeartOff, Hourglass, RotateCcw, Home, Target, XCircle, Flame, Search } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 
-interface LevelCompleteModalProps {
-  timeSpent: number;
-  maxTime?: number;
-  onNextLevel: () => void;
-  onRestart?: () => void;
+interface GameOverModalProps {
+  onRetry: () => void;
+  onBackToMenu?: () => void;
 }
 
-export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
-  timeSpent,
-  maxTime = 60,
-  onNextLevel,
-}) => {
-  const { playerStats, stats, resetGame, t } = useGame();
+export const GameOverModal: React.FC<GameOverModalProps> = ({ onRetry, onBackToMenu }) => {
+  const { defeatReason, foundWords, targetWords, playerStats, resetGame, t } = useGame();
 
-  const stars = stats?.stars || (timeSpent / maxTime <= 0.4 ? 3 : timeSpent / maxTime <= 0.75 ? 2 : 1);
+  const handleBackToMenu = () => {
+    if (onBackToMenu) {
+      onBackToMenu();
+    } else {
+      resetGame();
+    }
+  };
+
+  const isOutOfLives = defeatReason === 'out_of_lives';
   const correctHits = Math.max(0, playerStats.attempts - playerStats.mistakes);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-cozy-bg/85 backdrop-blur-md p-4 animate-fade-in">
       <div className="w-full max-w-md bg-white rounded-card p-8 shadow-cozy-card flex flex-col items-center text-center space-y-6 select-none">
         
-        {/* Star Rating Display */}
-        <div className="flex items-center justify-center gap-2 pt-2">
-          {[1, 2, 3].map((index) => (
-            <Star
-              key={index}
-              className={`w-10 h-10 transition-all duration-500 ${
-                index <= stars
-                  ? 'text-cozy-honey fill-cozy-honey scale-110'
-                  : 'text-cozy-tile fill-cozy-tile/30'
-              }`}
-            />
-          ))}
-        </div>
+        {/* Icon Header based on Defeat Reason */}
+        {isOutOfLives ? (
+          <div className="w-20 h-20 rounded-full bg-rose-100 flex items-center justify-center text-rose-500 shadow-sm animate-pop-in">
+            <HeartOff className="w-10 h-10" />
+          </div>
+        ) : (
+          <div className="w-20 h-20 rounded-full bg-cozy-honey/20 flex items-center justify-center text-cozy-honey-dark shadow-sm animate-pop-in">
+            <Hourglass className="w-10 h-10" />
+          </div>
+        )}
 
-        {/* Title */}
+        {/* Dynamic Title & Description */}
         <div className="space-y-1">
-          <h2 className="text-2xl font-bold text-cozy-text">{t('levelCompleteTitle', '¡Excelente Memoria!')}</h2>
-          <p className="text-sm text-cozy-muted">
-            {t('levelCompleteSubtitle', 'Has completado el nivel con éxito.')}
+          <h2 className="text-2xl font-black text-cozy-text">
+            {isOutOfLives
+              ? t('outOfLivesTitle', '💔 ¡Sin vidas!')
+              : t('timeoutTitle', '⏰ ¡Tiempo agotado!')}
+          </h2>
+          <p className="text-sm text-cozy-muted leading-relaxed">
+            {isOutOfLives
+              ? t('outOfLivesSubtitle', 'Has agotado tus intentos en este nivel. ¡Aprende el patrón y vuelve a intentarlo!')
+              : t('timeoutSubtitle', 'El tiempo de búsqueda ha terminado. ¡Entrena esa vista para la próxima!')}
           </p>
         </div>
 
@@ -66,24 +71,24 @@ export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
           </div>
 
           <div className="flex flex-col items-center gap-1 p-2 rounded-tile bg-white border border-cozy-tile-shadow/10 shadow-xs">
-            <Clock size={16} className="text-cozy-honey-dark" />
-            <span className="text-sm font-black text-cozy-text">{timeSpent}s</span>
-            <span className="text-[9px] font-bold text-cozy-muted uppercase tracking-wider">{t('statsTime', 'Tiempo')}</span>
+            <Search size={16} className="text-cozy-honey-dark" />
+            <span className="text-sm font-black text-cozy-text">{foundWords.length} / {targetWords.length}</span>
+            <span className="text-[9px] font-bold text-cozy-muted uppercase tracking-wider">{t('statsWords', 'Palabras')}</span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col w-full gap-3 pt-2">
+        <div className="w-full flex flex-col gap-3">
           <button
-            onClick={onNextLevel}
+            onClick={onRetry}
             className="w-full py-4 bg-cozy-mint hover:bg-cozy-mint-dark text-white font-bold rounded-tile shadow-tactile active:translate-y-0.5 active:shadow-none transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>{t('nextLevel', 'Siguiente Nivel')}</span>
-            <ArrowRight className="w-5 h-5"/>
+            <RotateCcw className="w-5 h-5"/>
+            <span>{t('retryLevel', 'Reintentar Nivel')}</span>
           </button>
 
           <button
-            onClick={resetGame}
+            onClick={handleBackToMenu}
             className="w-full py-3 bg-cozy-tile hover:bg-cozy-tile/80 text-cozy-text font-bold rounded-tile border border-cozy-tile-shadow/20 shadow-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Home className="w-4 h-4 text-cozy-muted"/>

@@ -3,39 +3,49 @@ import { GameProvider, useGame } from './context/GameContext';
 import { useTimer } from './hooks/useTimer';
 import { useCozyAudio } from './hooks/useCozyAudio';
 import { LOCALIZED_LEVELS } from './data/localizedLevels';
+import { generateGrid } from './utils/gridGenerator';
 import { Header } from './components/layout/Header';
 import { GameViewport } from './components/layout/GameViewport';
 import { BoardGrid } from './components/game/BoardGrid';
 import { MemorizeOverlay } from './components/game/MemorizeOverlay';
 import { CompletionModal } from './components/game/CompletionModal';
 import { LevelCompleteModal } from './components/game/LevelCompleteModal';
-import { LevelFailedModal } from './components/game/LevelFailedModal';
+import { GameOverModal } from './components/game/GameOverModal';
 import { MainMenu } from './components/menu/MainMenu';
 import { LevelSelectModal } from './components/menu/LevelSelectModal';
+import { WordList } from './components/WordSearch/WordList';
 import type { GridWord, GameStats } from './types/game';
 import { 
   Clock, 
-  Trophy, 
-  EyeOff, 
-  HelpCircle,
-  Check
+  Trophy
 } from 'lucide-react';
 
 const GameContent: React.FC = () => {
   const {
     gameState,
     setGameState,
+    gameModeConfig,
+    setDefeatReason,
+    registerCorrectWord,
+    registerIncorrectWord,
+    awardHint,
     language,
+    currentMode,
+    currentCategory,
     levelIndex,
     targetWords,
+    setTargetWords,
     foundWords,
     setFoundWords,
     foundWordObjects,
     setFoundWordObjects,
+    setGrid,
+    setAllGridWords,
     stats,
     setStats,
     saveLevelProgress,
     startGame,
+    resetGame,
     t,
   } = useGame();
 
@@ -49,9 +59,10 @@ const GameContent: React.FC = () => {
 
   // Time-up callback when search timer hits 0
   const handleTimeUp = useCallback(() => {
+    setDefeatReason('timeout');
     playLevelFailed();
     setGameState('LEVEL_FAILED');
-  }, [setGameState, playLevelFailed]);
+  }, [setGameState, setDefeatReason, playLevelFailed]);
 
   const searchDuration = currentLevel.searchTime || 60;
 
@@ -70,31 +81,59 @@ const GameContent: React.FC = () => {
     // Avoid double entries
     if (foundWords.includes(wordObj.word)) return;
 
+    const { comboCount } = registerCorrectWord();
+    if (currentMode === 'memory_rush' && comboCount >= 3 && comboCount % 3 === 0) {
+      awardHint();
+    }
+
     const nextFoundWords = [...foundWords, wordObj.word];
     const nextFoundWordObjects = [...foundWordObjects, wordObj];
 
     setFoundWords(nextFoundWords);
     setFoundWordObjects(nextFoundWordObjects);
 
+    // Zen Mode (isInfinite === true): dynamically spawn a new word in the grid to replace it without triggering LEVEL_COMPLETE
+    if (gameModeConfig.isInfinite) {
+      playWordFound();
+
+      const allPoolWords = (LOCALIZED_LEVELS[language] || LOCALIZED_LEVELS.en).flatMap(l => l.words);
+      const availablePool = allPoolWords.filter(w => !targetWords.includes(w));
+      const nextWord = availablePool[Math.floor(Math.random() * availablePool.length)] || `WORD${targetWords.length + 1}`;
+
+      const updatedTargets = targetWords.map(w => w === wordObj.word ? nextWord : w);
+      const { matrix, placedWords } = generateGrid(updatedTargets, language);
+
+      setGrid(matrix);
+      setTargetWords(updatedTargets);
+      setAllGridWords(placedWords);
+      setFoundWords(nextFoundWords);
+      return;
+    }
+
     // Check if level is finished (Win condition)
     if (nextFoundWords.length === targetWords.length) {
       playLevelComplete();
 
-      // Calculate accuracy
-      const totalAttempts = targetWords.length + mistakes;
+      // Calculate accuracy & score with mode penalty settings
+      const effectiveMistakes = gameModeConfig.maxLives !== null ? mistakes : 0;
+      const totalAttempts = targetWords.length + effectiveMistakes;
       const accuracy = Math.round((targetWords.length / totalAttempts) * 100);
 
       // Score logic: base 500 + time bonus + accuracy bonus
       const speedBonus = Math.max(0, 1000 - elapsedTime * 10);
-      const accuracyBonus = Math.max(0, 500 - mistakes * 80);
+      const accuracyBonus = Math.max(0, 500 - effectiveMistakes * 80);
       const score = Math.round(targetWords.length * 150 + speedBonus + accuracyBonus);
 
       // Star calculation
-      let stars = 1;
-      if (mistakes <= 1 && elapsedTime <= currentLevel.memorizeTime * 3) {
-        stars = 3;
-      } else if (mistakes <= 3 && elapsedTime <= currentLevel.memorizeTime * 6) {
-        stars = 2;
+      let stars = 3;
+      if (gameModeConfig.maxLives !== null) {
+        if (effectiveMistakes <= 1 && elapsedTime <= currentLevel.memorizeTime * 3) {
+          stars = 3;
+        } else if (effectiveMistakes <= 3 && elapsedTime <= currentLevel.memorizeTime * 6) {
+          stars = 2;
+        } else {
+          stars = 1;
+        }
       }
 
       const finalStats: GameStats = {
@@ -115,6 +154,10 @@ const GameContent: React.FC = () => {
 
   const handleMistake = () => {
     setMistakes((prev) => prev + 1);
+    const { gameOver } = registerIncorrectWord();
+    if (gameOver) {
+      playLevelFailed();
+    }
   };
 
   const handleSkipMemorize = () => {
@@ -136,6 +179,11 @@ const GameContent: React.FC = () => {
 
   const levels = LOCALIZED_LEVELS[language];
   const hasNextLevel = levelIndex + 1 < levels.length;
+
+  const timeLimitVal = gameModeConfig.memorizeTimeLimit(levelIndex);
+  const memorizeDuration = timeLimitVal !== null
+    ? timeLimitVal
+    : currentLevel.memorizeTime;
 
   return (
     <div className="w-full flex flex-col min-h-screen">
@@ -189,62 +237,21 @@ const GameContent: React.FC = () => {
               {gameState === 'MEMORIZING' && (
                 <MemorizeOverlay
                   words={targetWords}
-                  durationSeconds={currentLevel.memorizeTime}
+                  durationSeconds={memorizeDuration}
                   onTimeUp={handleSkipMemorize}
                 />
               )}
             </div>
 
-            {/* Bottom Status / Memory Badges */}
-            <div className="w-full bg-cozy-card border border-cozy-tile-shadow/15 rounded-card p-5 shadow-sm">
-              <h4 className="text-xs font-black tracking-widest text-cozy-muted uppercase mb-3 flex items-center gap-1.5">
-                {gameState === 'MEMORIZING' ? (
-                  <>
-                    <HelpCircle size={14} />
-                    <span>{t('memorizeWords')}</span>
-                  </>
-                ) : (
-                  <>
-                    <EyeOff size={14} className="text-cozy-muted" />
-                    <span>{t('searching')}</span>
-                  </>
-                )}
-              </h4>
-
-              {/* Word Recall slots grid */}
-              <div className="flex flex-wrap gap-2 justify-start">
-                {targetWords.map((word, index) => {
-                  const isFound = foundWords.includes(word);
-                  return (
-                    <div
-                      key={index}
-                      className={`
-                        px-3.5 py-2 rounded-tile font-black text-sm select-none border transition-all duration-300
-                        ${isFound
-                          ? 'bg-cozy-mint/15 border-cozy-mint/40 text-cozy-mint-dark line-through opacity-60 scale-95 flex items-center gap-1.5'
-                          : 'bg-cozy-tile/50 border-cozy-tile-shadow/10 text-cozy-text'
-                        }
-                      `}
-                    >
-                      {isFound ? (
-                        <span className="flex items-center gap-1.5">
-                          <Check size={14} className="text-cozy-mint-dark stroke-[3] animate-pop-in" />
-                          <span>{word}</span>
-                        </span>
-                      ) : (
-                        // Render question mark slots to match letter lengths
-                        <span className="font-mono text-cozy-muted/65 select-none font-bold">
-                          {word.split('').map(() => '?').join(' ')}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Bottom Status / Memory Badges rendering via WordList component */}
+            <WordList
+              targetWords={targetWords}
+              foundWords={foundWords}
+              hideWordListInSearch={gameModeConfig.hideWordListInSearch}
+              gameState={gameState}
+            />
           </div>
         )}
-
         {/* Level Complete Overlay */}
         {gameState === 'LEVEL_COMPLETE' && (
           <LevelCompleteModal
@@ -255,10 +262,11 @@ const GameContent: React.FC = () => {
           />
         )}
 
-        {/* Level Failed Overlay */}
-        {gameState === 'LEVEL_FAILED' && (
-          <LevelFailedModal
+        {/* Defeat / Game Over Overlay */}
+        {(gameState === 'LEVEL_FAILED' || gameState === 'GAME_OVER') && (
+          <GameOverModal
             onRetry={handleRestartLevel}
+            onBackToMenu={resetGame}
           />
         )}
 
@@ -273,7 +281,7 @@ const GameContent: React.FC = () => {
 
         {/* Level Select Modal */}
         {isLevelSelectOpen && (
-          <LevelSelectModal key={language} onClose={() => setIsLevelSelectOpen(false)} />
+          <LevelSelectModal key={`${language}-${currentMode}-${currentCategory}`} onClose={() => setIsLevelSelectOpen(false)} />
         )}
       </GameViewport>
     </div>

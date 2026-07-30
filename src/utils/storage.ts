@@ -1,24 +1,18 @@
-import type { ProgressByLanguage, ProgressMap, LevelProgress } from '../types/game';
+import type { GameMode, ProgressMap, LevelProgress } from '../types/game';
+import type { CategoryId } from '../types/category';
 
-const STORAGE_KEY = 'cozy_wordsearch_progress_v2';
-const OLD_STORAGE_KEY = 'cozy_wordsearch_progress';
+// Key format: cozy_progress_[LANGUAGE]_[MODE]_[CATEGORY]
+export const getStorageKey = (lang: string, mode: GameMode = 'cozy', category: CategoryId = 'general'): string => {
+  return `cozy_progress_${lang}_${mode}_${category}`;
+};
 
-export const getRawProgress = (): ProgressByLanguage => {
+export const getProgressForCategory = (lang: string, mode: GameMode = 'cozy', category: CategoryId = 'general'): ProgressMap => {
   if (typeof window === 'undefined') return {};
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKey(lang, mode, category);
+    const saved = localStorage.getItem(key);
     if (saved) {
       return JSON.parse(saved);
-    }
-
-    // Fallback/migration from v1 global progress if present
-    const oldSaved = localStorage.getItem(OLD_STORAGE_KEY);
-    if (oldSaved) {
-      const parsedOld = JSON.parse(oldSaved);
-      // Migrate old data into 'en' locale bucket
-      const migrated: ProgressByLanguage = { en: parsedOld };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-      return migrated;
     }
   } catch {
     // Ignore storage parse errors
@@ -26,32 +20,23 @@ export const getRawProgress = (): ProgressByLanguage => {
   return {};
 };
 
-export const getProgressForLanguage = (lang: string): ProgressMap => {
-  const currentData = getRawProgress();
-  return currentData[lang] || {};
-};
+export const getProgressForMode = getProgressForCategory;
 
-export const getLevelProgress = (lang: string, levelIndex: number): LevelProgress => {
-  const allProgress = getRawProgress();
-  const langProgress = allProgress[lang];
-
-  if (!langProgress || !langProgress[levelIndex]) {
-    return { completed: false, stars: 0 };
-  }
-
-  return langProgress[levelIndex];
+export const getLevelProgress = (lang: string, mode: GameMode, category: CategoryId, levelIndex: number): LevelProgress => {
+  const progress = getProgressForCategory(lang, mode, category);
+  return progress[levelIndex] || { completed: false, stars: 0 };
 };
 
 export const saveProgress = (
   lang: string,
+  mode: GameMode,
+  category: CategoryId,
   levelIndex: number,
   stars: number,
   timeSpent: number = 0
-): ProgressByLanguage => {
-  const currentData = getRawProgress();
-  const langProgress = currentData[lang] || {};
-  
-  const existingLevel = langProgress[levelIndex];
+): ProgressMap => {
+  const currentProgress = getProgressForCategory(lang, mode, category);
+  const existingLevel = currentProgress[levelIndex];
   const newStars = existingLevel ? Math.max(existingLevel.stars, stars) : stars;
 
   let newTime: number | undefined = undefined;
@@ -61,8 +46,8 @@ export const saveProgress = (
     newTime = existingLevel?.bestTime;
   }
 
-  currentData[lang] = {
-    ...langProgress,
+  const updatedProgress: ProgressMap = {
+    ...currentProgress,
     [levelIndex]: {
       stars: newStars,
       completed: true,
@@ -72,11 +57,12 @@ export const saveProgress = (
 
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
+      const key = getStorageKey(lang, mode, category);
+      localStorage.setItem(key, JSON.stringify(updatedProgress));
     } catch {
       // Ignore storage write errors
     }
   }
 
-  return currentData;
+  return updatedProgress;
 };

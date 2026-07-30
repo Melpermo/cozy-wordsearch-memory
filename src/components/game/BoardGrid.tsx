@@ -10,7 +10,7 @@ interface BoardGridProps {
 }
 
 export const BoardGrid: React.FC<BoardGridProps> = ({ onWordFound, onMistake }) => {
-  const { grid, allGridWords, foundWords, foundWordObjects, gameState } = useGame();
+  const { grid, allGridWords, foundWords, foundWordObjects, gameState, activeHint } = useGame();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -86,6 +86,19 @@ export const BoardGrid: React.FC<BoardGridProps> = ({ onWordFound, onMistake }) 
     );
   };
 
+  const isHintFirstLetter = (row: number, col: number) => {
+    if (!activeHint) return false;
+    return activeHint.startCoords.row === row && activeHint.startCoords.col === col;
+  };
+
+  const isHintDirection = (row: number, col: number) => {
+    if (!activeHint || activeHint.step !== 'direction') return false;
+    return (
+      (activeHint.startCoords.row === row && activeHint.startCoords.col === col) ||
+      (activeHint.endCoords.row === row && activeHint.endCoords.col === col)
+    );
+  };
+
   const isBlurred = gameState === 'MEMORIZING' || gameState === 'IDLE';
 
   return (
@@ -112,6 +125,8 @@ export const BoardGrid: React.FC<BoardGridProps> = ({ onWordFound, onMistake }) 
               col={cIdx}
               isSelected={isSelected(rIdx, cIdx)}
               isFound={isFound(rIdx, cIdx)}
+              isHintFirstLetter={isHintFirstLetter(rIdx, cIdx)}
+              isHintDirection={isHintDirection(rIdx, cIdx)}
               onPointerDown={(e) => {
                 if (isBlurred) return;
                 // Only left click triggers (pointerType === 'mouse' ? button === 0)

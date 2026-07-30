@@ -1,18 +1,18 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { useCozyAudio } from '../../hooks/useCozyAudio';
-import { LOCALIZED_LEVELS } from '../../data/localizedLevels';
-import { X, Star, Lock, Clock, Compass, Play } from 'lucide-react';
+import { CATEGORY_WORDS } from '../../data/categoriesData';
+import { X, Star, Lock, Compass, Play } from 'lucide-react';
 
 interface LevelSelectModalProps {
   onClose: () => void;
 }
 
 export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({ onClose }) => {
-  const { language, progressMap, startGame, t } = useGame();
+  const { language, currentCategory, progressMap, startGame, t } = useGame();
   const { playButtonClick } = useCozyAudio();
 
-  const levels = LOCALIZED_LEVELS[language] || LOCALIZED_LEVELS.en;
+  const categoryLevels = CATEGORY_WORDS[currentCategory]?.[language] || CATEGORY_WORDS.general.en;
 
   const isLevelUnlocked = (idx: number) => {
     if (idx === 0) return true;
@@ -26,15 +26,22 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({ onClose }) =
     startGame(idx);
   };
 
+  const categoryName = t(`category.${currentCategory}`, currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1));
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cozy-bg/85 backdrop-blur-md animate-fade-in">
       <div className="w-full max-w-md bg-white rounded-card p-6 shadow-cozy-card flex flex-col gap-5 max-h-[90vh]">
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-cozy-tile-shadow/15 pb-4">
-          <h2 className="text-xl font-bold text-cozy-text flex items-center gap-2">
-            <span>Seleccionar Nivel</span>
-          </h2>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-bold text-cozy-text flex items-center gap-2">
+              <span>{t('levelSelect', 'Seleccionar Nivel')}</span>
+            </h2>
+            <span className="text-xs font-semibold text-cozy-mint-dark">
+              {categoryName}
+            </span>
+          </div>
           <button
             onClick={() => {
               playButtonClick();
@@ -48,7 +55,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({ onClose }) =
 
         {/* Level Grid / List */}
         <div className="flex flex-col gap-3 overflow-y-auto pr-1">
-          {levels.map((level, idx) => {
+          {categoryLevels.map((words, idx) => {
             const unlocked = isLevelUnlocked(idx);
             const progress = progressMap[idx];
             const stars = progress?.stars || 0;
@@ -56,7 +63,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({ onClose }) =
 
             return (
               <div
-                key={level.id}
+                key={idx}
                 onClick={() => handleSelectLevel(idx)}
                 className={`
                   p-4 rounded-card border-2 transition-all duration-200 flex items-center justify-between select-none
@@ -79,17 +86,13 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({ onClose }) =
                   </div>
 
                   <span className="text-base font-bold text-cozy-text">
-                    {level.displayName[language] || level.displayName.en}
+                    {categoryName} #{idx + 1}
                   </span>
 
                   <div className="flex items-center gap-3 text-xs text-cozy-muted font-medium mt-0.5">
                     <span className="flex items-center gap-1">
                       <Compass size={13} />
-                      {level.words.length} palabras
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock size={13} />
-                      {level.memorizeTime}s
+                      {words.length} {t('statsWords', 'palabras')}
                     </span>
                   </div>
                 </div>

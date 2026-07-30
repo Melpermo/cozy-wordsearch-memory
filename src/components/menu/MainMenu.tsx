@@ -3,14 +3,16 @@ import { useGame } from '../../context/GameContext';
 import { useCozyAudio } from '../../hooks/useCozyAudio';
 import { LOCALIZED_LEVELS } from '../../data/localizedLevels';
 import { Button } from '../common/Button';
-import { Brain, Play, Map } from 'lucide-react';
+import { CategorySelect } from './CategorySelect';
+import { Brain, Play, Map, Coffee, Zap, Sparkles } from 'lucide-react';
+import type { GameMode } from '../../types/game';
 
 interface MainMenuProps {
   onOpenLevelSelect: () => void;
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
-  const { language, levelIndex, progressMap, startGame, t } = useGame();
+  const { language, levelIndex, currentMode, setCurrentMode, progressMap, startGame, t } = useGame();
   const { playButtonClick } = useCozyAudio();
 
   const levels = LOCALIZED_LEVELS[language] || LOCALIZED_LEVELS.en;
@@ -24,7 +26,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
   const handlePlayClick = () => {
     playButtonClick();
     const targetIdx = getContinueLevelIndex();
-    startGame(targetIdx);
+    startGame(targetIdx, currentMode);
   };
 
   const handleLevelSelectClick = () => {
@@ -32,11 +34,32 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
     onOpenLevelSelect();
   };
 
+  const modes: { id: GameMode; label: string; desc: string; icon: React.ReactNode }[] = [
+    {
+      id: 'cozy',
+      label: 'Cozy',
+      desc: 'Relaxed memorization & search',
+      icon: <Coffee size={18} />,
+    },
+    {
+      id: 'memory_rush',
+      label: 'Memory Rush',
+      desc: '7s memorization + hidden word list',
+      icon: <Zap size={18} />,
+    },
+    {
+      id: 'zen',
+      label: 'Zen',
+      desc: 'No memorization + infinite spawning',
+      icon: <Sparkles size={18} />,
+    },
+  ];
+
   return (
-    <div className="w-full py-6 flex flex-col items-center gap-8 animate-pop-in select-none max-w-md mx-auto">
+    <div className="w-full py-6 flex flex-col items-center gap-6 animate-pop-in select-none max-w-md mx-auto">
       {/* Hero Logo / Icon */}
       <div className="text-center flex flex-col items-center">
-        <div className="w-24 h-24 bg-cozy-mint/15 text-cozy-mint rounded-card flex items-center justify-center mb-5 border-2 border-cozy-mint/25 shadow-cozy-card">
+        <div className="w-24 h-24 bg-cozy-mint/15 text-cozy-mint rounded-card flex items-center justify-center mb-4 border-2 border-cozy-mint/25 shadow-cozy-card">
           <Brain size={52} className="animate-cozy-float" />
         </div>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-cozy-text mb-2">
@@ -46,6 +69,42 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
           {t('subtitle')}
         </p>
       </div>
+
+      {/* Mode Selector */}
+      <div className="w-full flex flex-col gap-2 px-2">
+        <span className="text-xs font-black text-cozy-muted uppercase tracking-widest px-1">
+          Modo de Juego
+        </span>
+        <div className="grid grid-cols-3 gap-2">
+          {modes.map((m) => {
+            const isActive = currentMode === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => {
+                  playButtonClick();
+                  setCurrentMode(m.id);
+                }}
+                className={`
+                  p-3 rounded-tile flex flex-col items-center text-center gap-1.5 border transition-all cursor-pointer
+                  ${isActive
+                    ? 'bg-cozy-mint/15 border-cozy-mint text-cozy-mint-dark font-black shadow-sm scale-102'
+                    : 'bg-cozy-card hover:bg-cozy-tile/60 border-cozy-tile-shadow/15 text-cozy-text/75 font-semibold'
+                  }
+                `}
+              >
+                <div className={isActive ? 'text-cozy-mint-dark' : 'text-cozy-muted'}>
+                  {m.icon}
+                </div>
+                <span className="text-xs font-bold leading-tight">{m.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Category Selector */}
+      <CategorySelect />
 
       {/* Main Action Buttons */}
       <div className="flex flex-col w-full gap-3.5 px-2">

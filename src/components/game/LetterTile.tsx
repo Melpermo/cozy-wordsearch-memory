@@ -6,6 +6,8 @@ interface LetterTileProps {
   col: number;
   isSelected: boolean;
   isFound: boolean;
+  isHintFirstLetter?: boolean;
+  isHintDirection?: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
 }
 
@@ -15,6 +17,8 @@ export const LetterTile: React.FC<LetterTileProps> = ({
   col,
   isSelected,
   isFound,
+  isHintFirstLetter = false,
+  isHintDirection = false,
   onPointerDown,
 }) => {
   // Determine tailwind style mapping based on state
@@ -24,6 +28,10 @@ export const LetterTile: React.FC<LetterTileProps> = ({
     stateClasses = 'bg-cozy-mint text-white shadow-[0px_4px_0px_#62A89B] border-cozy-mint-dark/30 scale-[0.98]';
   } else if (isSelected) {
     stateClasses = 'bg-cozy-honey text-cozy-text shadow-[0px_4px_0px_#E0B060] border-cozy-honey-dark/30 scale-[0.98] translate-y-[2px]';
+  } else if (isHintFirstLetter) {
+    stateClasses = 'bg-amber-200/90 text-amber-950 font-black border-amber-400 ring-4 ring-amber-300/70 animate-pulse shadow-cozy-glow scale-105 z-10';
+  } else if (isHintDirection) {
+    stateClasses = 'bg-amber-100/90 text-amber-900 font-bold border-amber-300 ring-2 ring-amber-300/50 animate-pulse scale-102 z-10';
   }
 
   return (

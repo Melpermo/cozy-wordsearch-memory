@@ -1,9 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import type { GameState, GameStats, GridWord, GameContextType, ProgressByLanguage } from '../types/game';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { GameMode, GameStats, GridWord, GameContextType, ProgressMap, ActiveHint } from '../types/game';
+import type { CategoryId } from '../types/category';
 import { type LanguageCode, translate } from '../i18n/i18nConfig';
 import { LOCALIZED_LEVELS } from '../data/localizedLevels';
+import { CATEGORY_WORDS } from '../data/categoriesData';
 import { generateGrid } from '../utils/gridGenerator';
-import { getRawProgress, saveProgress } from '../utils/storage';
+import { getProgressForCategory, saveProgress } from '../utils/storage';
+import { useGameFSM } from '../hooks/useGameFSM';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -15,7 +18,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return supported.includes(systemLang) ? systemLang : 'en';
   });
 
-  const [gameState, setGameState] = useState<GameState>('MAIN_MENU');
+  const [currentCategory, setCurrentCategory] = useState<CategoryId>('general');
   const [levelIndex, setLevelIndex] = useState<number>(0);
   const [grid, setGrid] = useState<string[][]>([]);
   const [targetWords, setTargetWords] = useState<string[]>([]);
@@ -24,68 +27,195 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [allGridWords, setAllGridWords] = useState<GridWord[]>([]);
   const [stats, setStats] = useState<GameStats | null>(null);
 
-  // Scoped progress dictionary by language code
-  const [progressData, setProgressData] = useState<ProgressByLanguage>(() => getRawProgress());
+  // Core Game FSM
+  const fsm = useGameFSM({ levelIndex });
 
-  // Derived progress map for current active language
-  const progressMap = useMemo(() => {
-    return progressData[language] || {};
-  }, [progressData, language]);
+  // Progress dictionary scoped by language, mode, and category
+  const [progressMap, setProgressMap] = useState<ProgressMap>(() => 
+    getProgressForCategory(language, fsm.currentMode, currentCategory)
+  );
+
+  // Sync progressMap when language, currentMode, or currentCategory changes
+  useEffect(() => {
+    setProgressMap(getProgressForCategory(language, fsm.currentMode, currentCategory));
+  }, [language, fsm.currentMode, currentCategory]);
 
   // Sync level index when changing language to avoid out of bounds
   useEffect(() => {
-    const levels = LOCALIZED_LEVELS[language] || LOCALIZED_LEVELS.en;
-    if (levelIndex >= levels.length) {
+    const categoryLevels = CATEGORY_WORDS[currentCategory]?.[language] || CATEGORY_WORDS.general.en;
+    if (levelIndex >= categoryLevels.length) {
       setLevelIndex(0);
     }
-  }, [language, levelIndex]);
+  }, [language, currentCategory, levelIndex]);
+
+  const [activeHint, setActiveHint] = useState<ActiveHint | null>(null);
+  const [hintCooldown, setHintCooldown] = useState<boolean>(false);
+  const [hintCooldownSeconds, setHintCooldownSeconds] = useState<number>(0);
+  const [availableHints, setAvailableHints] = useState<number | null>(null);
+  const [hintToast, setHintToast] = useState<string | null>(null);
+
+  // Cooldown countdown effect for Cozy / Zen mode infinite hints
+  // Auto-clears active hint when cooldown ends (timer reaches 0)
+  useEffect(() => {
+    if (hintCooldownSeconds <= 0) {
+      setHintCooldown(false);
+      if (fsm.currentMode !== 'memory_rush') {
+        setActiveHint(null);
+      }
+      return;
+    }
+    const timer = setInterval(() => {
+      setHintCooldownSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setHintCooldown(false);
+          if (fsm.currentMode !== 'memory_rush') {
+            setActiveHint(null);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [hintCooldownSeconds, fsm.currentMode]);
+
+  // Clear active hint if the target word is found
+  useEffect(() => {
+    if (activeHint && (foundWords.includes(activeHint.word) || foundWords.some(w => w.toUpperCase() === activeHint.word.toUpperCase()))) {
+      setActiveHint(null);
+    }
+  }, [foundWords, activeHint]);
 
   const setLanguage = (lang: LanguageCode) => {
     setLanguageState(lang);
   };
 
   const saveLevelProgress = (targetLevelIdx: number, stars: number, timeSpent: number = 0) => {
-    const updatedProgress = saveProgress(language, targetLevelIdx, stars, timeSpent);
-    setProgressData({ ...updatedProgress });
+    const updatedProgress = saveProgress(language, fsm.currentMode, currentCategory, targetLevelIdx, stars, timeSpent);
+    setProgressMap({ ...updatedProgress });
   };
 
-  const startGame = (targetLevelIndex?: number) => {
-    const levels = LOCALIZED_LEVELS[language] || LOCALIZED_LEVELS.en;
+  const triggerHintToast = (msg: string) => {
+    setHintToast(msg);
+    setTimeout(() => {
+      setHintToast(null);
+    }, 2000);
+  };
+
+  const applyHintConsumption = () => {
+    if (fsm.currentMode === 'memory_rush') {
+      setAvailableHints((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
+    } else {
+      setHintCooldown(true);
+      setHintCooldownSeconds(5);
+    }
+  };
+
+  const triggerHint = () => {
+    if (fsm.gameState !== 'SEARCHING') return;
+
+    if (availableHints !== null && availableHints <= 0) return;
+    if (availableHints === null && hintCooldown) return;
+
+    const unfoundWords = allGridWords.filter(
+      (gw) => !foundWords.includes(gw.word) && !foundWords.includes(gw.normalized)
+    );
+
+    if (unfoundWords.length === 0) return;
+
+    if (activeHint) {
+      const currentHintWordStillUnfound = unfoundWords.find(
+        (gw) => gw.word === activeHint.word || gw.normalized === activeHint.word
+      );
+      if (currentHintWordStillUnfound && activeHint.step === 'first_letter') {
+        setActiveHint({
+          ...activeHint,
+          step: 'direction',
+        });
+        applyHintConsumption();
+        return;
+      }
+    }
+
+    const targetWord = unfoundWords.reduce((prev, curr) =>
+      curr.word.length > prev.word.length ? curr : prev, unfoundWords[0]
+    );
+
+    setActiveHint({
+      word: targetWord.word,
+      startCoords: targetWord.start,
+      endCoords: targetWord.end,
+      step: 'first_letter',
+    });
+
+    applyHintConsumption();
+  };
+
+  const clearHint = () => {
+    setActiveHint(null);
+  };
+
+  const startGame = (targetLevelIndex?: number, mode?: GameMode) => {
     const idx = targetLevelIndex !== undefined ? targetLevelIndex : levelIndex;
     if (targetLevelIndex !== undefined) {
       setLevelIndex(targetLevelIndex);
     }
-    const currentLevel = levels[idx] || levels[0];
+
+    const categoryLevels = CATEGORY_WORDS[currentCategory]?.[language] || CATEGORY_WORDS.general.en;
+    const defaultLevel = LOCALIZED_LEVELS[language]?.[idx] || LOCALIZED_LEVELS.en[0];
+    const levelWords = categoryLevels[idx] || defaultLevel.words;
 
     // Generate grid
-    const { matrix, placedWords } = generateGrid(currentLevel.words, language);
+    const { matrix, placedWords } = generateGrid(levelWords, language);
 
     setGrid(matrix);
-    setTargetWords(currentLevel.words);
+    setTargetWords(levelWords);
     setFoundWords([]);
     setFoundWordObjects([]);
     setAllGridWords(placedWords);
     setStats(null);
-    setGameState('MEMORIZING');
+
+    // Reset hints
+    setActiveHint(null);
+    setHintCooldown(false);
+    setHintCooldownSeconds(0);
+    const activeMode = mode || fsm.currentMode;
+    if (activeMode === 'memory_rush') {
+      setAvailableHints(0);
+    } else {
+      setAvailableHints(null);
+    }
+
+    fsm.startGameFSM(mode, idx);
   };
 
   const resetGame = () => {
-    setGameState('MAIN_MENU');
+    fsm.setGameState('MAIN_MENU');
     setGrid([]);
     setTargetWords([]);
     setFoundWords([]);
     setFoundWordObjects([]);
     setAllGridWords([]);
     setStats(null);
+    setActiveHint(null);
+    setHintCooldown(false);
+    setHintCooldownSeconds(0);
+    setAvailableHints(null);
   };
 
   const completeGame = (finalStats: GameStats) => {
     setStats(finalStats);
-    setGameState('COMPLETED');
+    fsm.setGameState('COMPLETED');
   };
 
   const t = (key: string, paramsOrFallback?: string | Record<string, string | number>, fallback?: string) => {
     return translate(language, key, paramsOrFallback, fallback);
+  };
+
+  const awardHint = () => {
+    setAvailableHints((prev) => (prev !== null ? prev + 1 : 1));
+    triggerHintToast(translate(language, 'hintEarned', '+1 Pista!'));
   };
 
   return (
@@ -93,8 +223,29 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         language,
         setLanguage,
-        gameState,
-        setGameState,
+        gameState: fsm.gameState,
+        setGameState: fsm.setGameState,
+        currentMode: fsm.currentMode,
+        setCurrentMode: fsm.setCurrentMode,
+        currentCategory,
+        setCurrentCategory,
+        gameModeConfig: fsm.gameModeConfig,
+        currentLives: fsm.currentLives,
+        setCurrentLives: fsm.setCurrentLives,
+        defeatReason: fsm.defeatReason,
+        setDefeatReason: fsm.setDefeatReason,
+        playerStats: fsm.playerStats,
+        setPlayerStats: fsm.setPlayerStats,
+        registerCorrectWord: fsm.registerCorrectWord,
+        registerIncorrectWord: fsm.registerIncorrectWord,
+        activeHint,
+        hintCooldown,
+        hintCooldownSeconds,
+        availableHints,
+        hintToast,
+        triggerHint,
+        clearHint,
+        awardHint,
         levelIndex,
         setLevelIndex,
         grid,
