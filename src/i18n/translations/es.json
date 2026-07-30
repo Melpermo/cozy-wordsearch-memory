@@ -57,5 +57,15 @@
   "category_animals": "Animales",
   "category_culture": "Cultura",
   "hint": "Pista",
-  "hintEarned": "+1 Pista!"
+  "hintEarned": "+1 Pista!",
+  "credits.button": "Créditos",
+  "credits.title": "Acerca del Proyecto",
+  "credits.subtitle": "Un laboratorio de desarrollo por Melpermo",
+  "credits.description": "Este juego nació como un proyecto experimental enfocado en explorar las capacidades de la IA conversacional (Google Gemini) y la aceleración de desarrollo mediante Antigravity IDE.",
+  "credits.techTitle": "Aspectos Técnicos Destacados",
+  "credits.arch": "🧠 Arquitectura: Máquina de Estados Finitos (FSM) en React + TypeScript.",
+  "credits.audio": "🎵 Audio Procedural: Sintetizador sin assets externos mediante Web Audio API.",
+  "credits.i18n": "🌍 i18n Nativo: Diccionarios y sopas de letras localizadas en 6 idiomas.",
+  "credits.zeroDeps": "⚡ Zero External Dependencies: Alto rendimiento y peso ultra ligero.",
+  "credits.footer": "Diseñado y desarrollado con pasión por Melpermo • 2026"
 }

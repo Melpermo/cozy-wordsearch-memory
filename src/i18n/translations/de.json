@@ -50,5 +50,15 @@
   "category.astral": "Astral",
   "category.animals": "Tiere",
   "hint": "Hinweis",
-  "hintEarned": "+1 Hinweis!"
+  "hintEarned": "+1 Hinweis!",
+  "credits.button": "Credits",
+  "credits.title": "Über das Projekt",
+  "credits.subtitle": "Ein Entwicklungslabor von Melpermo",
+  "credits.description": "Dieses Spiel entstand als experimentelles Projekt zur Erforschung konversationeller KI-Funktionen (Google Gemini) und Entwicklungsbeschleunigung mit Antigravity IDE.",
+  "credits.techTitle": "Technische Highlights",
+  "credits.arch": "🧠 Architektur: Zustandsautomat (FSM) in React + TypeScript.",
+  "credits.audio": "🎵 Prozedurales Audio: Synthesizer ohne externe Assets über Web Audio API.",
+  "credits.i18n": "🌍 Natives i18n: Lokalisierte Wörterbücher und Wortgitter in 6 Sprachen.",
+  "credits.zeroDeps": "⚡ Keine externen Abhängigkeiten: Hohe Leistung und ultraleicht.",
+  "credits.footer": "Mit Leidenschaft entworfen und entwickelt von Melpermo • 2026"
 }

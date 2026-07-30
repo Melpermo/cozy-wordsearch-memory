@@ -57,5 +57,15 @@
   "category_animals": "Animals",
   "category_culture": "Culture",
   "hint": "Hint",
-  "hintEarned": "+1 Hint!"
+  "hintEarned": "+1 Hint!",
+  "credits.button": "Credits",
+  "credits.title": "About the Project",
+  "credits.subtitle": "A development lab by Melpermo",
+  "credits.description": "This game was created as an experimental project exploring conversational AI capabilities (Google Gemini) and development acceleration via Antigravity IDE.",
+  "credits.techTitle": "Key Technical Highlights",
+  "credits.arch": "🧠 Architecture: Finite State Machine (FSM) in React + TypeScript.",
+  "credits.audio": "🎵 Procedural Audio: Zero-asset synthesizer built with Web Audio API.",
+  "credits.i18n": "🌍 Native i18n: Localized dictionaries and word grids in 6 languages.",
+  "credits.zeroDeps": "⚡ Zero External Dependencies: Ultra lightweight and high performance.",
+  "credits.footer": "Designed & developed with passion by Melpermo • 2026"
 }

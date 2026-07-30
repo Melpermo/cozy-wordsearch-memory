@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { useCozyAudio } from '../../hooks/useCozyAudio';
 import { LOCALIZED_LEVELS } from '../../data/localizedLevels';
 import { Button } from '../common/Button';
 import { CategorySelect } from './CategorySelect';
-import { Brain, Play, Map, Coffee, Zap, Sparkles } from 'lucide-react';
+import { CreditsModal } from '../Modals/CreditsModal';
+import { Brain, Play, Map, Coffee, Zap, Sparkles, Info } from 'lucide-react';
 import type { GameMode } from '../../types/game';
 
 interface MainMenuProps {
@@ -14,6 +15,7 @@ interface MainMenuProps {
 export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
   const { language, levelIndex, currentMode, setCurrentMode, progressMap, startGame, t } = useGame();
   const { playButtonClick } = useCozyAudio();
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
 
   const levels = LOCALIZED_LEVELS[language] || LOCALIZED_LEVELS.en;
 
@@ -107,7 +109,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
       <CategorySelect />
 
       {/* Main Action Buttons */}
-      <div className="flex flex-col w-full gap-3.5 px-2">
+      <div className="flex flex-col w-full gap-3 px-2">
         <Button
           onClick={handlePlayClick}
           variant="primary"
@@ -118,14 +120,32 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
           <span>{t('play')}</span>
         </Button>
 
-        <button
-          onClick={handleLevelSelectClick}
-          className="w-full py-3.5 bg-cozy-card hover:bg-cozy-tile/80 text-cozy-text font-bold rounded-tile border-2 border-cozy-tile-shadow/20 shadow-sm transition-all duration-150 flex items-center justify-center gap-2.5 cursor-pointer active:scale-98"
-        >
-          <Map size={20} className="text-cozy-mint-dark" />
-          <span>Seleccionar Nivel</span>
-        </button>
+        <div className="flex items-center gap-2.5 w-full">
+          <button
+            onClick={handleLevelSelectClick}
+            className="flex-1 py-3.5 bg-cozy-card hover:bg-cozy-tile/80 text-cozy-text font-bold rounded-tile border-2 border-cozy-tile-shadow/20 shadow-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+          >
+            <Map size={20} className="text-cozy-mint-dark" />
+            <span>{t('levelSelect', 'Seleccionar Nivel')}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              playButtonClick();
+              setIsCreditsOpen(true);
+            }}
+            className="p-3.5 bg-cozy-card hover:bg-cozy-tile/80 text-cozy-text font-bold rounded-tile border-2 border-cozy-tile-shadow/20 shadow-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-98 shrink-0"
+            title={t('credits.button', 'Créditos')}
+            aria-label={t('credits.button', 'Créditos')}
+          >
+            <Info size={20} className="text-cozy-mint-dark" />
+            <span className="hidden sm:inline text-sm font-bold">{t('credits.button', 'Créditos')}</span>
+          </button>
+        </div>
       </div>
+
+      {/* Credits Modal */}
+      <CreditsModal isOpen={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
     </div>
   );
 };

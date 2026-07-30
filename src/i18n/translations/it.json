@@ -50,5 +50,15 @@
   "category.astral": "Astrale",
   "category.animals": "Animali",
   "hint": "Suggerimento",
-  "hintEarned": "+1 Suggerimento!"
+  "hintEarned": "+1 Suggerimento!",
+  "credits.button": "Crediti",
+  "credits.title": "Informazioni sul Progetto",
+  "credits.subtitle": "Un laboratorio di sviluppo di Melpermo",
+  "credits.description": "Questo gioco è nato come progetto sperimentale per esplorare le capacità dell'IA conversazionale (Google Gemini) e l'accelerazione dello sviluppo con Antigravity IDE.",
+  "credits.techTitle": "Punti di Forza Tecnici",
+  "credits.arch": "🧠 Architettura: Macchina a stati finiti (FSM) in React + TypeScript.",
+  "credits.audio": "🎵 Audio Procedurale: Sintetizzatore senza asset esterni tramite Web Audio API.",
+  "credits.i18n": "🌍 i18n Nativo: Dizionari e griglie di parole localizzate in 6 lingue.",
+  "credits.zeroDeps": "⚡ Zero Dipendenze Esterne: Prestazioni elevate e peso ultra leggero.",
+  "credits.footer": "Progettato e sviluppato con passione da Melpermo • 2026"
 }
