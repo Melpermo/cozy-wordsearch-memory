@@ -49,6 +49,13 @@
   "category.bakery": "Bakery",
   "category.astral": "Astral",
   "category.animals": "Animals",
+  "category.culture": "Culture",
+  "category_general": "General",
+  "category_nature": "Nature",
+  "category_bakery": "Bakery",
+  "category_astral": "Astral",
+  "category_animals": "Animals",
+  "category_culture": "Culture",
   "hint": "Hint",
   "hintEarned": "+1 Hint!"
 }

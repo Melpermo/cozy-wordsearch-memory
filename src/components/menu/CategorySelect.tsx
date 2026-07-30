@@ -1,9 +1,9 @@
 import React from 'react';
-import { Grid, Leaf, Coffee, Sparkles, HeartHandshake } from 'lucide-react';
+import { Grid, Leaf, Coffee, Sparkles, HeartHandshake, Landmark } from 'lucide-react';
 import { CATEGORIES, type CategoryId } from '../../types/category';
 import { useGame } from '../../context/GameContext';
 import { useCozyAudio } from '../../hooks/useCozyAudio';
-import { CATEGORY_WORDS } from '../../data/categoriesData';
+import { getCategoryLevels } from '../../data/wordPacks';
 
 interface CategorySelectProps {
   onSelectCategory?: (id: CategoryId) => void;
@@ -23,6 +23,8 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ onSelectCategory
         return <Sparkles size={20} className="text-indigo-600" />;
       case 'HeartHandshake':
         return <HeartHandshake size={20} className="text-orange-600" />;
+      case 'Landmark':
+        return <Landmark size={20} className="text-rose-600" />;
       case 'Grid':
       default:
         return <Grid size={20} className="text-cozy-mint-dark" />;
@@ -46,7 +48,7 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ onSelectCategory
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
         {CATEGORIES.map((cat) => {
           const isActive = currentCategory === cat.id;
-          const totalLevels = (CATEGORY_WORDS[cat.id]?.[language] || CATEGORY_WORDS.general.en).length;
+          const totalLevels = getCategoryLevels(cat.id, language).length;
 
           return (
             <button
@@ -65,7 +67,7 @@ export const CategorySelect: React.FC<CategorySelectProps> = ({ onSelectCategory
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-bold truncate text-cozy-text leading-tight">
-                  {t(`category.${cat.id}`, cat.id.charAt(0).toUpperCase() + cat.id.slice(1))}
+                  {t(`category_${cat.id}`, t(`category.${cat.id}`, cat.id.charAt(0).toUpperCase() + cat.id.slice(1)))}
                 </span>
                 <span className="text-[10px] font-bold text-cozy-muted uppercase tracking-wider mt-0.5">
                   {totalLevels} Nivel{totalLevels > 1 ? 'es' : ''}

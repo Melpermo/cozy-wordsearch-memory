@@ -33,7 +33,7 @@ export const LOCALIZED_LEVELS: Record<LanguageCode, LevelData[]> = {
     {
       id: 1,
       displayName: { en: "Cozy Hearth", es: "Hogar Acogedor", fr: "Foyer Douillet", de: "Gemütlicher Herd", pt: "Lareira Aconchegante", it: "Focolare Accogliente" },
-      words: ["CAFÉ", "LANA", "FUEGO", "TÉ", "HOJA"],
+      words: ["CAFÉ", "LANA", "FUEGO", "TAPIZ", "HOJA"],
       memorizeTime: 10,
     },
     {
@@ -65,7 +65,7 @@ export const LOCALIZED_LEVELS: Record<LanguageCode, LevelData[]> = {
     {
       id: 3,
       displayName: { en: "Autumn Evening", es: "Tarde de Otoño", fr: "Soirée d'Automne", de: "Herbstabend", pt: "Tarde de Outono", it: "Sera d'Autunno" },
-      words: ["COUVERTURE", "CHEMINÉE", "BOUGIE", "TASSE", "DOUCEUR"],
+      words: ["PLAID", "BOUGIE", "LANTERNE", "TASSE", "DOUCEUR"],
       memorizeTime: 20,
     }
   ],
@@ -105,7 +105,7 @@ export const LOCALIZED_LEVELS: Record<LanguageCode, LevelData[]> = {
     {
       id: 3,
       displayName: { en: "Autumn Evening", es: "Tarde de Otoño", fr: "Soirée d'Automne", de: "Herbstabend", pt: "Tarde de Outono", it: "Sera d'Autunno" },
-      words: ["MANTA", "LAREIRA", "LANTERNA", "CHÁVENA", "QUENTINHO"],
+      words: ["MANTA", "LAREIRA", "LANTERNA", "CHÁVENA", "QUENTE"],
       memorizeTime: 20,
     }
   ],
@@ -113,7 +113,7 @@ export const LOCALIZED_LEVELS: Record<LanguageCode, LevelData[]> = {
     {
       id: 1,
       displayName: { en: "Cozy Hearth", es: "Hogar Acogedor", fr: "Foyer Douillet", de: "Gemütlicher Herd", pt: "Lareira Aconchegante", it: "Focolare Accogliente" },
-      words: ["TÈ", "LANA", "FUOCO", "NIDO", "CACAO"],
+      words: ["CACAO", "LANA", "FUOCO", "NIDO", "CACAO"],
       memorizeTime: 10,
     },
     {
@@ -125,7 +125,7 @@ export const LOCALIZED_LEVELS: Record<LanguageCode, LevelData[]> = {
     {
       id: 3,
       displayName: { en: "Autumn Evening", es: "Tarde de Otoño", fr: "Soirée d'Automne", de: "Herbstabend", pt: "Tarde de Outono", it: "Sera d'Autunno" },
-      words: ["COPERTA", "CAMINETTO", "LANTERNA", "TAZZA", "CALORE"],
+      words: ["COPERTA", "CAMINO", "LANTERNA", "TAZZA", "CALORE"],
       memorizeTime: 20,
     }
   ],

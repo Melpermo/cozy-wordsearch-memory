@@ -5,6 +5,8 @@ import de from './translations/de.json';
 import pt from './translations/pt.json';
 import it from './translations/it.json';
 
+import { CATEGORY_TRANSLATIONS } from '../data/translations';
+
 export type LanguageCode = 'en' | 'es' | 'fr' | 'de' | 'pt' | 'it';
 
 export const LANGUAGES: Record<LanguageCode, string> = {
@@ -16,7 +18,7 @@ export const LANGUAGES: Record<LanguageCode, string> = {
   it: 'Italiano',
 };
 
-export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
+const rawTranslations: Record<LanguageCode, Record<string, string>> = {
   en,
   es,
   fr,
@@ -24,6 +26,17 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
   pt,
   it,
 };
+
+export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = (
+  Object.keys(rawTranslations) as LanguageCode[]
+).reduce((acc, code) => {
+  acc[code] = {
+    ...rawTranslations[code],
+    ...(CATEGORY_TRANSLATIONS[code] || {}),
+  };
+  return acc;
+}, {} as Record<LanguageCode, Record<string, string>>);
+
 
 export function translate(
   lang: LanguageCode,

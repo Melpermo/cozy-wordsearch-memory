@@ -2,6 +2,14 @@ import type { LanguageCode } from '../i18n/i18nConfig';
 import type { Position, GridWord } from '../types/game';
 
 const GRID_SIZE = 8;
+const SUPPORTED_LANGS: LanguageCode[] = ['en', 'es', 'fr', 'de', 'pt', 'it'];
+
+/**
+ * Ensures the requested language code is supported, falling back to 'en'.
+ */
+export function getSafeLanguage(lang: string): LanguageCode {
+  return (SUPPORTED_LANGS.includes(lang as LanguageCode) ? lang : 'en') as LanguageCode;
+}
 
 const LETTER_FREQUENCIES: Record<LanguageCode, string> = {
   en: 'EEEEEEEEEEEEETTTTTTTTTTAAAAAAAAAOOOOOOOOOIIIIIIIIINNNNNNNNSSSSSSSRRRRRRRHHHHHHHLLLLDDCUUUMMWWFFGGYYPPBVKJXQZ',
@@ -37,23 +45,47 @@ const DIRECTIONS: Direction[] = [
  * - In German, ß -> SS, Ä -> A, Ö -> O, Ü -> U
  * - In Spanish, retains Ñ
  */
-export function normalizeWord(word: string, lang: LanguageCode): string {
+export function normalizeWord(word: string, lang: string): string {
+  const safeLang = getSafeLanguage(lang);
   let normalized = word.toUpperCase();
   
-  if (lang === 'de') {
+  if (safeLang === 'de') {
     normalized = normalized.replace(/ß/g, 'SS');
   } else {
     normalized = normalized.replace(/ß/g, 'S');
   }
 
   return normalized.split('').map(char => {
-    if (lang === 'es' && char === 'Ñ') return 'Ñ';
+    if (safeLang === 'es' && char === 'Ñ') return 'Ñ';
     if (char === 'Ä') return 'A';
     if (char === 'Ö') return 'O';
     if (char === 'Ü') return 'U';
     // Remove other accents/diacritics
     return char.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }).join('');
+}
+
+/**
+ * Selects target words from a word list based on level difficulty.
+ */
+export function selectTargetWordsForDifficulty(
+  words: string[],
+  levelIndex: number = 0,
+  targetCount: number = 5
+): string[] {
+  if (!words || words.length === 0) {
+    return ['COZY', 'WARM', 'MINT', 'TEA', 'WOOD'];
+  }
+
+  const totalLevels = Math.max(1, Math.ceil(words.length / targetCount));
+  const normalizedLevel = levelIndex % totalLevels;
+  const startIndex = normalizedLevel * targetCount;
+  const chunk = words.slice(startIndex, startIndex + targetCount);
+
+  if (chunk.length >= 3) {
+    return chunk;
+  }
+  return words.slice(0, targetCount);
 }
 
 interface Placement {
@@ -69,7 +101,9 @@ export interface GeneratedGrid {
 /**
  * Generates an 8x8 word search board containing the target words.
  */
-export function generateGrid(words: string[], lang: LanguageCode): GeneratedGrid {
+export function generateGrid(words: string[], lang: string): GeneratedGrid {
+  const safeLang = getSafeLanguage(lang);
+
   // We try generation multiple times in case placements overlap search space fails
   for (let attempt = 0; attempt < 200; attempt++) {
     const matrix: string[][] = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(''));
@@ -78,7 +112,7 @@ export function generateGrid(words: string[], lang: LanguageCode): GeneratedGrid
 
     // Shuffle words to place them in random order of difficulty
     const sortedWords = [...words]
-      .map(w => ({ original: w, normalized: normalizeWord(w, lang) }))
+      .map(w => ({ original: w, normalized: normalizeWord(w, safeLang) }))
       .sort((a, b) => b.normalized.length - a.normalized.length); // Place longest words first
 
     for (const item of sortedWords) {
@@ -156,7 +190,7 @@ export function generateGrid(words: string[], lang: LanguageCode): GeneratedGrid
 
     if (success) {
       // Fill empty spaces with random filler letters using localized frequencies
-      const frequencyString = LETTER_FREQUENCIES[lang] || LETTER_FREQUENCIES.en;
+      const frequencyString = LETTER_FREQUENCIES[safeLang] || LETTER_FREQUENCIES.en;
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let c = 0; c < GRID_SIZE; c++) {
           if (matrix[r][c] === '') {
@@ -170,6 +204,7 @@ export function generateGrid(words: string[], lang: LanguageCode): GeneratedGrid
     }
   }
 
-  // Fallback: in case generation fails 200 times (extremely rare for small word lists in 8x8), return empty state
+  // Fallback: in case generation fails 200 times, return empty state
   return { matrix: Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill('A')), placedWords: [] };
 }
+

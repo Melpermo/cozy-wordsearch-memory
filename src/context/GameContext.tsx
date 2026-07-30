@@ -2,11 +2,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { GameMode, GameStats, GridWord, GameContextType, ProgressMap, ActiveHint } from '../types/game';
 import type { CategoryId } from '../types/category';
 import { type LanguageCode, translate } from '../i18n/i18nConfig';
-import { LOCALIZED_LEVELS } from '../data/localizedLevels';
-import { CATEGORY_WORDS } from '../data/categoriesData';
-import { generateGrid } from '../utils/gridGenerator';
+import { WORD_PACKS, getCategoryWordList } from '../data/wordPacks';
+import { generateGrid, selectTargetWordsForDifficulty } from '../utils/gridGenerator';
 import { getProgressForCategory, saveProgress } from '../utils/storage';
 import { useGameFSM } from '../hooks/useGameFSM';
+import { audioService } from '../services/audioService';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -40,10 +40,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProgressMap(getProgressForCategory(language, fsm.currentMode, currentCategory));
   }, [language, fsm.currentMode, currentCategory]);
 
-  // Sync level index when changing language to avoid out of bounds
+  // Sync level index when changing language or category to avoid out of bounds
   useEffect(() => {
-    const categoryLevels = CATEGORY_WORDS[currentCategory]?.[language] || CATEGORY_WORDS.general.en;
-    if (levelIndex >= categoryLevels.length) {
+    const categoryWords = getCategoryWordList(currentCategory, language);
+    const totalLevels = Math.max(1, Math.ceil(categoryWords.length / 5));
+    if (levelIndex >= totalLevels) {
       setLevelIndex(0);
     }
   }, [language, currentCategory, levelIndex]);
@@ -149,6 +150,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       step: 'first_letter',
     });
 
+    audioService.playHintUsed();
     applyHintConsumption();
   };
 
@@ -162,9 +164,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLevelIndex(targetLevelIndex);
     }
 
-    const categoryLevels = CATEGORY_WORDS[currentCategory]?.[language] || CATEGORY_WORDS.general.en;
-    const defaultLevel = LOCALIZED_LEVELS[language]?.[idx] || LOCALIZED_LEVELS.en[0];
-    const levelWords = categoryLevels[idx] || defaultLevel.words;
+    const categoryWords = WORD_PACKS[currentCategory]?.words[language] || WORD_PACKS[currentCategory]?.words['en'] || getCategoryWordList(currentCategory, language);
+    const levelWords = selectTargetWordsForDifficulty(categoryWords, idx, 5);
 
     // Generate grid
     const { matrix, placedWords } = generateGrid(levelWords, language);
@@ -206,6 +207,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const completeGame = (finalStats: GameStats) => {
     setStats(finalStats);
+    audioService.playVictory();
     fsm.setGameState('COMPLETED');
   };
 
@@ -236,8 +238,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setDefeatReason: fsm.setDefeatReason,
         playerStats: fsm.playerStats,
         setPlayerStats: fsm.setPlayerStats,
-        registerCorrectWord: fsm.registerCorrectWord,
-        registerIncorrectWord: fsm.registerIncorrectWord,
+        registerCorrectWord: () => {
+          const res = fsm.registerCorrectWord();
+          audioService.playWordFound();
+          if (res.comboCount > 1) {
+            audioService.playCombo(res.comboCount);
+          }
+          return res;
+        },
+        registerIncorrectWord: () => {
+          const res = fsm.registerIncorrectWord();
+          if (res.gameOver) {
+            audioService.playDefeat();
+          }
+          return res;
+        },
         activeHint,
         hintCooldown,
         hintCooldownSeconds,

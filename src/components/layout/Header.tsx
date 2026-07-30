@@ -1,9 +1,9 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
-import { useCozyAudio } from '../../hooks/useCozyAudio';
 import { LanguageSelector } from '../common/LanguageSelector';
+import { SoundToggle } from '../common/SoundToggle';
 import { HintButton } from '../HUD/HintButton';
-import { Home, Sparkles, Volume2, VolumeX, Heart, Flame } from 'lucide-react';
+import { Home, Sparkles, Heart, Flame } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { 
@@ -17,18 +17,11 @@ export const Header: React.FC = () => {
     playerStats,
     hintToast 
   } = useGame();
-  const { isMuted, toggleMute, playButtonClick } = useCozyAudio();
 
   const isMainMenu = gameState === 'MAIN_MENU';
   const showHUD = !isMainMenu && (gameState === 'MEMORIZING' || gameState === 'SEARCHING');
 
-  const handleToggleMute = () => {
-    toggleMute();
-    playButtonClick();
-  };
-
   const handleReset = () => {
-    playButtonClick();
     resetGame();
   };
 
@@ -108,18 +101,7 @@ export const Header: React.FC = () => {
       {/* Right Controls */}
       <div className="flex items-center gap-2.5">
         {/* Sound Toggle Button (Always visible) */}
-        <button
-          onClick={handleToggleMute}
-          className="flex items-center justify-center p-2 rounded-full bg-cozy-tile/65 text-cozy-text border border-cozy-tile-shadow/20 shadow-sm hover:bg-cozy-tile/90 active:translate-y-0.5 active:shadow-none transition-all duration-150 cursor-pointer"
-          title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-          aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-        >
-          {isMuted ? (
-            <VolumeX size={18} className="text-cozy-muted" />
-          ) : (
-            <Volume2 size={18} className="text-cozy-mint-dark" />
-          )}
-        </button>
+        <SoundToggle />
 
         {/* Language Selector (ONLY visible in Main Menu) */}
         {isMainMenu && <LanguageSelector />}

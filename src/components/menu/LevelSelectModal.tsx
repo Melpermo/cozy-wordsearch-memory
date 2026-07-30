@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { useCozyAudio } from '../../hooks/useCozyAudio';
-import { CATEGORY_WORDS } from '../../data/categoriesData';
+import { getCategoryLevels } from '../../data/wordPacks';
 import { X, Star, Lock, Compass, Play } from 'lucide-react';
 
 interface LevelSelectModalProps {
@@ -12,7 +12,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({ onClose }) =
   const { language, currentCategory, progressMap, startGame, t } = useGame();
   const { playButtonClick } = useCozyAudio();
 
-  const categoryLevels = CATEGORY_WORDS[currentCategory]?.[language] || CATEGORY_WORDS.general.en;
+  const categoryLevels = getCategoryLevels(currentCategory, language);
 
   const isLevelUnlocked = (idx: number) => {
     if (idx === 0) return true;
@@ -26,7 +26,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({ onClose }) =
     startGame(idx);
   };
 
-  const categoryName = t(`category.${currentCategory}`, currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1));
+  const categoryName = t(`category_${currentCategory}`, t(`category.${currentCategory}`, currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cozy-bg/85 backdrop-blur-md animate-fade-in">

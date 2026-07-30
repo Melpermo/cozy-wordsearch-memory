@@ -1,41 +1,17 @@
-import { useState, useCallback } from 'react';
-import { audioManager } from '../utils/audioManager';
+import { useAudio } from './useAudio';
 
 export function useCozyAudio() {
-  const [isMuted, setIsMutedState] = useState<boolean>(() => audioManager.isMuted());
-
-  const toggleMute = useCallback(() => {
-    const nextMuted = audioManager.toggleMute();
-    setIsMutedState(nextMuted);
-  }, []);
-
-  const playTileSelect = useCallback(() => {
-    audioManager.playTileSelect();
-  }, []);
-
-  const playWordFound = useCallback(() => {
-    audioManager.playWordFound();
-  }, []);
-
-  const playLevelComplete = useCallback(() => {
-    audioManager.playLevelComplete();
-  }, []);
-
-  const playLevelFailed = useCallback(() => {
-    audioManager.playLevelFailed();
-  }, []);
-
-  const playButtonClick = useCallback(() => {
-    audioManager.playButtonClick();
-  }, []);
+  const audio = useAudio();
 
   return {
-    isMuted,
-    toggleMute,
-    playTileSelect,
-    playWordFound,
-    playLevelComplete,
-    playLevelFailed,
-    playButtonClick,
+    isMuted: audio.isMuted,
+    toggleMute: audio.toggleMute,
+    playTileSelect: audio.playLetterSelect,
+    playWordFound: audio.playWordFound,
+    playLevelComplete: audio.playVictory,
+    playLevelFailed: audio.playDefeat,
+    playButtonClick: audio.playClick,
+    playHintUsed: audio.playHintUsed,
+    playCombo: audio.playCombo,
   };
 }

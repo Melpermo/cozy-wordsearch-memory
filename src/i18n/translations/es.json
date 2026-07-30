@@ -49,6 +49,13 @@
   "category.bakery": "Repostería",
   "category.astral": "Astral",
   "category.animals": "Animales",
+  "category.culture": "Cultura",
+  "category_general": "General",
+  "category_nature": "Naturaleza",
+  "category_bakery": "Repostería",
+  "category_astral": "Astral",
+  "category_animals": "Animales",
+  "category_culture": "Cultura",
   "hint": "Pista",
   "hintEarned": "+1 Pista!"
 }
