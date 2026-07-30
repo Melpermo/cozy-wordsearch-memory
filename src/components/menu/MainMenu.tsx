@@ -139,11 +139,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
           <button
             onClick={() => handleOpenInfo('guide')}
             className="p-3.5 bg-cozy-card hover:bg-cozy-tile/80 text-cozy-text font-bold rounded-tile border-2 border-cozy-tile-shadow/20 shadow-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-98 shrink-0"
-            title={t('guide.tabGuide', 'Cómo Jugar')}
-            aria-label={t('guide.tabGuide', 'Cómo Jugar')}
+            title={t('guide.button', 'Guía y Créditos')}
+            aria-label={t('guide.button', 'Guía y Créditos')}
           >
             <Info size={20} className="text-cozy-mint-dark" />
-            <span className="hidden sm:inline text-sm font-bold">{t('guide.tabGuide', 'Cómo Jugar')}</span>
+            <span className="hidden sm:inline text-sm font-bold">{t('guide.button', 'Guía y Créditos')}</span>
           </button>
         </div>
       </div>
