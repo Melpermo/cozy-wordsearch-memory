@@ -4,7 +4,7 @@ import { useCozyAudio } from '../../hooks/useCozyAudio';
 import { LOCALIZED_LEVELS } from '../../data/localizedLevels';
 import { Button } from '../common/Button';
 import { CategorySelect } from './CategorySelect';
-import { CreditsModal } from '../Modals/CreditsModal';
+import { InfoModal } from '../Modals/InfoModal';
 import { Brain, Play, Map, Coffee, Zap, Sparkles, Info } from 'lucide-react';
 import type { GameMode } from '../../types/game';
 
@@ -15,7 +15,8 @@ interface MainMenuProps {
 export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
   const { language, levelIndex, currentMode, setCurrentMode, progressMap, startGame, t } = useGame();
   const { playButtonClick } = useCozyAudio();
-  const [isCreditsOpen, setIsCreditsOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [infoDefaultTab, setInfoDefaultTab] = useState<'guide' | 'credits'>('guide');
 
   const levels = LOCALIZED_LEVELS[language] || LOCALIZED_LEVELS.en;
 
@@ -34,6 +35,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
   const handleLevelSelectClick = () => {
     playButtonClick();
     onOpenLevelSelect();
+  };
+
+  const handleOpenInfo = (tab: 'guide' | 'credits' = 'guide') => {
+    playButtonClick();
+    setInfoDefaultTab(tab);
+    setIsInfoOpen(true);
   };
 
   const modes: { id: GameMode; label: string; desc: string; icon: React.ReactNode }[] = [
@@ -130,22 +137,23 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onOpenLevelSelect }) => {
           </button>
 
           <button
-            onClick={() => {
-              playButtonClick();
-              setIsCreditsOpen(true);
-            }}
+            onClick={() => handleOpenInfo('guide')}
             className="p-3.5 bg-cozy-card hover:bg-cozy-tile/80 text-cozy-text font-bold rounded-tile border-2 border-cozy-tile-shadow/20 shadow-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-98 shrink-0"
-            title={t('credits.button', 'Créditos')}
-            aria-label={t('credits.button', 'Créditos')}
+            title={t('guide.tabGuide', 'Cómo Jugar')}
+            aria-label={t('guide.tabGuide', 'Cómo Jugar')}
           >
             <Info size={20} className="text-cozy-mint-dark" />
-            <span className="hidden sm:inline text-sm font-bold">{t('credits.button', 'Créditos')}</span>
+            <span className="hidden sm:inline text-sm font-bold">{t('guide.tabGuide', 'Cómo Jugar')}</span>
           </button>
         </div>
       </div>
 
-      {/* Credits Modal */}
-      <CreditsModal isOpen={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
+      {/* Info & Game Guide Modal */}
+      <InfoModal
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+        defaultTab={infoDefaultTab}
+      />
     </div>
   );
 };

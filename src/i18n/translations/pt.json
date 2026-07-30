@@ -60,5 +60,20 @@
   "credits.audio": "🎵 Áudio Procedural: Sintetizador sem assets externos via Web Audio API.",
   "credits.i18n": "🌍 i18n Nativo: Dicionários e caça-palavras localizados em 6 idiomas.",
   "credits.zeroDeps": "⚡ Zero Dependências Externas: Alto desempenho e peso ultra leve.",
-  "credits.footer": "Projetado e desenvolvido com paixão por Melpermo • 2026"
+  "credits.footer": "Projetado e desenvolvido com paixão por Melpermo • 2026",
+  "guide.tabGuide": "Como Jogar",
+  "guide.tabCredits": "Créditos & Lab",
+  "guide.title": "Guia do Jogo & Regras",
+  "guide.subtitle": "Aprenda os modos de jogo e o sistema de progressão",
+  "guide.modesTitle": "Modos de Jogo",
+  "guide.cozyTitle": "Modo Aconchegante (Cozy)",
+  "guide.cozyDesc": "Procura de palavras relaxante com dicas progressivas. Ideal para jogar sem stress.",
+  "guide.rushTitle": "Corrida de Memória (Memory Rush)",
+  "guide.rushDesc": "Memorize as palavras em poucos segundos antes de procurar. Jogue contra o tempo com vidas, combos e dicas!",
+  "guide.zenTitle": "Modo Zen",
+  "guide.zenDesc": "Geração infinita de tabuleiros sem tempo nem pontuação. Relaxamento puro.",
+  "guide.progressionTitle": "Progressão de Níveis",
+  "guide.progressionDesc": "Completar níveis desbloqueia grelhas de palavras mais desafiantes.",
+  "guide.isolationTitle": "Progressão Independente",
+  "guide.isolationDesc": "Cada combinação de Idioma + Modo + Categoria mantém a sua própria progressão isolada. Mudar de idioma não apaga as suas conquistas!"
 }

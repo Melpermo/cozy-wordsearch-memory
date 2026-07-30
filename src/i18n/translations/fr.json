@@ -60,5 +60,20 @@
   "credits.audio": "🎵 Audio Procédural : Synthétiseur sans fichiers externes via Web Audio API.",
   "credits.i18n": "🌍 i18n Natif : Dictionnaires et grilles de mots en 6 langues.",
   "credits.zeroDeps": "⚡ Zero Dépendances Externes : Performance élevée et poids ultra léger.",
-  "credits.footer": "Conçu et développé avec passion par Melpermo • 2026"
+  "credits.footer": "Conçu et développé avec passion par Melpermo • 2026",
+  "guide.tabGuide": "Comment Jouer",
+  "guide.tabCredits": "Crédits & Lab",
+  "guide.title": "Guide du Jeu & Règles",
+  "guide.subtitle": "Découvrez les modes de jeu et la progression",
+  "guide.modesTitle": "Modes de Jeu",
+  "guide.cozyTitle": "Mode Douillet (Cozy)",
+  "guide.cozyDesc": "Recherche de mots paisible avec indices progressifs. Idéal pour se détendre sans stress.",
+  "guide.rushTitle": "Course de Mémoire (Memory Rush)",
+  "guide.rushDesc": "Mémorisez les mots en quelques secondes avant de chercher. Jouez contre le chrono avec vies, combos et indices.",
+  "guide.zenTitle": "Mode Zen",
+  "guide.zenDesc": "Génération infinie de grilles sans chronomètre ni score. Relaxation pure.",
+  "guide.progressionTitle": "Progression des Niveaux",
+  "guide.progressionDesc": "Réussir les niveaux d'une catégorie débloque des dispositions de mots plus exigeantes.",
+  "guide.isolationTitle": "Progression Indépendante",
+  "guide.isolationDesc": "Chaque combinaison Langue + Mode + Catégorie conserve sa propre progression isolée. Changer de langue n'efface pas vos succès !"
 }

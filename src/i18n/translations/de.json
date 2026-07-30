@@ -60,5 +60,20 @@
   "credits.audio": "🎵 Prozedurales Audio: Synthesizer ohne externe Assets über Web Audio API.",
   "credits.i18n": "🌍 Natives i18n: Lokalisierte Wörterbücher und Wortgitter in 6 Sprachen.",
   "credits.zeroDeps": "⚡ Keine externen Abhängigkeiten: Hohe Leistung und ultraleicht.",
-  "credits.footer": "Mit Leidenschaft entworfen und entwickelt von Melpermo • 2026"
+  "credits.footer": "Mit Leidenschaft entworfen und entwickelt von Melpermo • 2026",
+  "guide.tabGuide": "Spielanleitung",
+  "guide.tabCredits": "Credits & Lab",
+  "guide.title": "Spielregeln & Anleitung",
+  "guide.subtitle": "Erfahre mehr über Spielmodi und Fortschrittsregeln",
+  "guide.modesTitle": "Spielmodi",
+  "guide.cozyTitle": "Gemütlicher Modus (Cozy)",
+  "guide.cozyDesc": "Entspannte Wortsuche mit schrittweisen Hinweisen. Ideal zum stressfreien Spielen.",
+  "guide.rushTitle": "Gedächtnis-Rausch (Memory Rush)",
+  "guide.rushDesc": "Präge dir die Wörter kurz ein, bevor du suchst. Spiele gegen die Zeit mit Leben, Combos und Hinweisen!",
+  "guide.zenTitle": "Zen-Modus",
+  "guide.zenDesc": "Endlose Spielfeld-Generierung ohne Zeitdruck oder Punkte. Reine Entspannung.",
+  "guide.progressionTitle": "Level-Fortschritt",
+  "guide.progressionDesc": "Das Abschließen von Leveln schaltet anspruchsvollere Wortgitter frei.",
+  "guide.isolationTitle": "Unabhängiger Fortschritt",
+  "guide.isolationDesc": "Jede Kombination aus Sprache + Modus + Kategorie speichert ihren eigenen Fortschritt. Das Wechseln der Sprache löscht keine Erfolge!"
 }

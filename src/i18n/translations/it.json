@@ -60,5 +60,20 @@
   "credits.audio": "🎵 Audio Procedurale: Sintetizzatore senza asset esterni tramite Web Audio API.",
   "credits.i18n": "🌍 i18n Nativo: Dizionari e griglie di parole localizzate in 6 lingue.",
   "credits.zeroDeps": "⚡ Zero Dipendenze Esterne: Prestazioni elevate e peso ultra leggero.",
-  "credits.footer": "Progettato e sviluppato con passione da Melpermo • 2026"
+  "credits.footer": "Progettato e sviluppato con passione da Melpermo • 2026",
+  "guide.tabGuide": "Come Giocare",
+  "guide.tabCredits": "Crediti & Lab",
+  "guide.title": "Guida del Gioco & Regole",
+  "guide.subtitle": "Scopri le modalità di gioco e la progressione",
+  "guide.modesTitle": "Modalità di Gioco",
+  "guide.cozyTitle": "Modalità Accogliente (Cozy)",
+  "guide.cozyDesc": "Ricerca di parole rilassante con suggerimenti progressivi senza stress. Ideale per rilassarsi.",
+  "guide.rushTitle": "Corsa della Memoria (Memory Rush)",
+  "guide.rushDesc": "Memorizza le parole in pochi secondi prima di cercare. Gioca contro il tempo con vite, combo e suggerimenti!",
+  "guide.zenTitle": "Modalità Zen",
+  "guide.zenDesc": "Generazione infinita di schemi senza timer né punteggio. Puro relax.",
+  "guide.progressionTitle": "Progressione dei Livelli",
+  "guide.progressionDesc": "Completare i livelli sblocca schemi di parole più sfidanti.",
+  "guide.isolationTitle": "Progressione Indipendente",
+  "guide.isolationDesc": "Ogni combinazione di Lingua + Modalità + Categoria mantiene i propri progressi isolati. Cambiare lingua non cancella i tuoi risultati!"
 }
